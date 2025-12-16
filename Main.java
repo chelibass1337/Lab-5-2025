@@ -1,46 +1,9 @@
 import functions.*;
-import functions.basic.*;
 import java.io.*;
 
 public class Main {
 
     public static void main(String[] args) throws IOException, FunctionPointIndexOutOfBoundsException, InappropriateFunctionPointException, ClassNotFoundException {
-        
-        // ==================== ТЕСТИРОВАНИЕ ОСНОВНЫХ ФУНКЦИЙ ====================
-        
-        Function Func1 = new Cos();
-        Function Func2 = new Sin();
-        double pi = Math.PI;
-        
-        System.out.println("\n========== ЗНАЧЕНИЯ SIN И COS ==========\n");
-        for (double i = 0; i <= pi; i += 0.1){
-            System.out.printf("sin(%.2f) = %.6f \t cos(%.2f) = %.6f\n", i, Func2.getFunctionValue(i), i, Func1.getFunctionValue(i)); 
-        }
-
-        // Создаем табулированные функции
-        TabulatedFunction TabulatedCos = TabulatedFunctions.tabulate(Func1, 0, pi, 10);
-        TabulatedFunction TabulatedSin = TabulatedFunctions.tabulate(Func2, 0, pi, 10);
-        
-        System.out.println("\n========== ЗНАЧЕНИЯ ТАБУЛИРОВАННЫХ SIN И COS ==========\n");
-        for (double i = 0; i <= pi; i += 0.1){
-            System.out.printf("sin(%.2f) = %.6f \t cos(%.2f) = %.6f\n", i, TabulatedSin.getFunctionValue(i), i, TabulatedCos.getFunctionValue(i)); 
-        }
-
-        System.out.println("\n========== РАЗНОСТЬ МЕЖДУ ТАБУЛИРОВАННЫМИ И ИСХОДНЫМИ ЗНАЧЕНИЯМИ ==========\n");
-        for (double i = 0; i <= pi; i += 0.1){
-            double absSin = Math.abs(TabulatedSin.getFunctionValue(i) - Func2.getFunctionValue(i));
-            double absCos = Math.abs(TabulatedCos.getFunctionValue(i) - Func1.getFunctionValue(i));
-            System.out.printf("Δsin(%.2f) = %.6f \t Δcos(%.2f) = %.6f\n", i, absSin, i, absCos);
-        }
-    
-        // Проверка тождества sin² + cos² = 1
-        Function SumOfSquaresSinAndCos = Functions.sum(Functions.power(TabulatedSin, 2), Functions.power(TabulatedCos, 2));
-        System.out.println("\n========== СУММА КВАДРАТОВ SIN И COS (sin² + cos² ≈ 1) ==========\n");
-        for (double i = 0; i <= pi; i += 0.1) {
-            System.out.printf("sin²(%.2f) + cos²(%.2f) = %.6f\n", i, i, SumOfSquaresSinAndCos.getFunctionValue(i));
-        }
-
-        // ==================== ТЕСТИРОВАНИЕ МЕТОДОВ ОБЪЕКТОВ ====================
         
         System.out.println("\n========== ТЕСТИРОВАНИЕ МЕТОДОВ toString(), equals(), hashCode(), clone() ==========\n");
         
@@ -195,64 +158,5 @@ public class Main {
         System.out.println("   - point1.equals(point2):     " + point1.equals(point2) + " (должно быть false)");
         System.out.println("   - point1.hashCode() == pointClone.hashCode(): " + (point1.hashCode() == pointClone.hashCode()) + " (должно быть true)");
         System.out.println("   - point1.hashCode() == point2.hashCode():     " + (point1.hashCode() == point2.hashCode()) + " (должно быть false)");
-
-        // ==================== ТЕСТИРОВАНИЕ СЕРИАЛИЗАЦИИ И ФАЙЛОВ ====================
-        
-        System.out.println("\n========== ТЕСТИРОВАНИЕ СЕРИАЛИЗАЦИИ И РАБОТЫ С ФАЙЛАМИ ==========\n");
-
-        // Тестирование записи/чтения экспоненты
-        TabulatedFunction Exp = TabulatedFunctions.tabulate(new Exp(), 0, 10, 11);
-        File f = new File("exp.txt");
-        FileWriter fw = new FileWriter(f);
-        TabulatedFunctions.writeTabulatedFunction(Exp, fw);
-        fw.close();
-        FileReader fr = new FileReader(f);
-        TabulatedFunction TabExp = TabulatedFunctions.readTabulatedFunction(fr);
-
-        System.out.println("ЭКСПОНЕНТА (Exp):");
-        for (int i = 0; i < 11; i++){
-            System.out.printf("Exp(%d) = %.6f \t Из файла: %.6f\n", i, Exp.getFunctionValue(i), TabExp.getFunctionValue(i));
-        }
-
-        // Тестирование записи/чтения натурального логарифма
-        TabulatedFunction ln = TabulatedFunctions.tabulate(new Log(Math.E), 1, 10, 11);
-        File f2 = new File("ln.txt");
-        FileOutputStream fw2 = new FileOutputStream(f2);
-        TabulatedFunctions.outputTabulatedFunction(ln, fw2);
-        fw2.close();
-        FileInputStream fr2 = new FileInputStream(f2);
-        TabulatedFunction TabLn = TabulatedFunctions.inputTabulatedFunction(fr2);
-
-        System.out.println("\nНАТУРАЛЬНЫЙ ЛОГАРИФМ (ln):");
-        for (int i = 1; i < 11; i++){
-            System.out.printf("ln(%d) = %.6f \t Из файла: %.6f\n", i, ln.getFunctionValue(i), TabLn.getFunctionValue(i));
-        }
-
-        // Тестирование Externalizable
-        TabulatedFunction Composition = TabulatedFunctions.tabulate(Functions.composition(new Exp(), new Log(Math.E)), 0, 10, 11);
-        
-        FileOutputStream fos = new FileOutputStream("Externalizable.txt");
-        ObjectOutputStream oos = new ObjectOutputStream(fos);
-        oos.writeObject(Composition);
-        oos.close();
-
-        FileInputStream fis = new FileInputStream("Externalizable.txt");
-        ObjectInputStream ois = new ObjectInputStream(fis);
-        TabulatedFunction loadedComposition = (TabulatedFunction)ois.readObject();
-        ois.close();
-
-        System.out.println("\nКОМПОЗИЦИЯ exp(ln(x)) (должна быть равна x):");
-        for (int i = 0; i < 11; i++) {
-            System.out.printf("Оригинал: %.6f \t Из файла: %.6f\n", Composition.getFunctionValue(i), loadedComposition.getFunctionValue(i));
-        }
-        
-        // Проверка методов для сериализованных объектов
-        System.out.println("\nПРОВЕРКА МЕТОДОВ ДЛЯ СЕРИАЛИЗОВАННЫХ ОБЪЕКТОВ:");
-        System.out.println("Composition.toString(): " + Composition);
-        System.out.println("loadedComposition.toString(): " + loadedComposition);
-        System.out.println("Composition.equals(loadedComposition): " + Composition.equals(loadedComposition));
-        System.out.println("Composition.hashCode() == loadedComposition.hashCode(): " + (Composition.hashCode() == loadedComposition.hashCode()));
-        
-        System.out.println("\n========== ТЕСТИРОВАНИЕ ЗАВЕРШЕНО ==========\n");
     }
 }

@@ -340,19 +340,20 @@ public class ArrayTabulatedFunction implements TabulatedFunction, Externalizable
         
         if (o instanceof ArrayTabulatedFunction) {
             ArrayTabulatedFunction other = (ArrayTabulatedFunction) o;
-            
             if (this.pointsCount != other.pointsCount) return false;
             
             for (int i = 0; i < pointsCount; i++) {
-                if (Math.abs(this.points[i].getX() - other.points[i].getX()) > EPSILON ||
-                    Math.abs(this.points[i].getY() - other.points[i].getY()) > EPSILON) {
+                FunctionPoint thisPoint = this.getPoint(i);
+                FunctionPoint otherPoint = other.getPoint(i);
+
+                if (!thisPoint.equals(otherPoint)) {
                     return false;
                 }
             }
             return true;
         } else {
             TabulatedFunction other = (TabulatedFunction) o;
-            
+
             if (this.pointsCount != other.getPointsCount()) return false;
             
             for (int i = 0; i < pointsCount; i++) {
@@ -360,8 +361,7 @@ public class ArrayTabulatedFunction implements TabulatedFunction, Externalizable
                     FunctionPoint thisPoint = this.getPoint(i);
                     FunctionPoint otherPoint = other.getPoint(i);
                     
-                    if (Math.abs(thisPoint.getX() - otherPoint.getX()) > EPSILON ||
-                        Math.abs(thisPoint.getY() - otherPoint.getY()) > EPSILON) {
+                    if (!thisPoint.equals(otherPoint)) {
                         return false;
                     }
                 } catch (FunctionPointIndexOutOfBoundsException e) {
@@ -374,18 +374,10 @@ public class ArrayTabulatedFunction implements TabulatedFunction, Externalizable
 
     @Override
     public int hashCode() {
-        int result = pointsCount; 
-        
-        for (int i = 0; i < pointsCount; i++) {
-            long xBits = Double.doubleToLongBits(points[i].getX());
-            long yBits = Double.doubleToLongBits(points[i].getY());
-            
-            int xHash = (int)(xBits ^ (xBits >>> 32));
-            int yHash = (int)(yBits ^ (yBits >>> 32));
-            
-            result = result ^ xHash ^ yHash;
+        int result = pointsCount;
+        for (int i = 0; i < pointsCount; i++)  {
+            result ^= points[i].hashCode();
         }
-        
         return result;
     }
 
